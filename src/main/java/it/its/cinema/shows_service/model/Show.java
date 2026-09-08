@@ -1,6 +1,6 @@
 package it.its.cinema.shows_service.model;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,20 +8,36 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
+@Table(name = "shows")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Show {
 
+    public static final int PRIMA_ORA_SERALE = 20;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "movie_id", nullable = false)
     private Movie movie;
+
+    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
+
+    @Column(name = "base_price", nullable = false, precision = 8, scale = 2)
     private BigDecimal basePrice;
+
+    @Column(name = "total_seats", nullable = false)
     private int totalSeats;
+
+    @Column(name = "available_seats", nullable = false)
     private int availableSeats;
 
-    public static final int PRIMA_ORA_SERALE = 20;
+
 
     public Show(Long id, Movie movie, LocalDateTime startTime, BigDecimal basePrice, int totalSeats) {
         if (movie == null) {

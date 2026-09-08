@@ -1,12 +1,17 @@
 package it.its.cinema.shows_service.service;
 
+import it.its.cinema.shows_service.model.Movie;
+import it.its.cinema.shows_service.model.MovieNotFoundException;
 import it.its.cinema.shows_service.model.Show;
 import it.its.cinema.shows_service.model.ShowNotFoundException;
+import it.its.cinema.shows_service.repository.MovieRepository;
 import it.its.cinema.shows_service.repository.ShowRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -15,9 +20,19 @@ import java.util.List;
 public class ShowService {
 
     private final ShowRepository repository;
+    private final MovieRepository movieRepository;
 
-    public Show addShow(Show show) {
-        return repository.save(show);
+    public Show addShow(Long moviedId, LocalDateTime startTime, int totalSeats, BigDecimal basePrice) {
+        if (moviedId == null) {
+            throw new IllegalArgumentException("Movie ID is required");
+        }
+        Movie movie = movieRepository.findById(moviedId)
+                .orElseThrow(()-> new MovieNotFoundException("Movie with ID " + moviedId + " not found"));
+
+        Show creato = repository.save(new Show(null, movie, startTime, basePrice, totalSeats));
+        log.info("Creato spettacolo {} per il film {} con {} posti disponibili",
+                creato.getId(), movie.getTitle(), totalSeats);
+        return creato;
     }
 
     public List<Show> findAll() {
