@@ -1,6 +1,7 @@
 package it.its.cinema.shows_service.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,11 +10,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import it.its.cinema.shows_service.model.Show;
 import it.its.cinema.shows_service.service.ShowService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/shows")
@@ -38,8 +44,11 @@ public class ShowController {
     })
 
     @GetMapping
-    public List<Show> findAll() {
-        return showService.findAll();
+    public Page<Show> findAll(
+            @PageableDefault(size = 20, sort = "startTime", direction = Sort.Direction.ASC)
+            Pageable pageable
+    ) {
+        return showService.findAll(pageable);
     }
 
     @Operation(
@@ -67,6 +76,21 @@ public class ShowController {
     ) {
         return showService.findById(id);
     }
+
+    @GetMapping("/ricerca")
+    public Page<Show> ricerca(
+            @Parameter(description = "Identificativo del film", example = "1")
+            @RequestParam Long movieId,
+            @Parameter(description = "Inizio dell'intervallo", example = "2024-01-01T00:00:00")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime da,
+            @Parameter(description = "Fine dell'intervallo", example = "2024-12-31T23:59:59")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime a,
+            @PageableDefault(size = 20, sort = "startTime", direction = Sort.Direction.ASC)
+            Pageable pageable
+    ){
+        return showService.perFilmEIntervallo(movieId, da, a, pageable);
+    }
+
 
 
 
