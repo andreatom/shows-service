@@ -13,6 +13,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Movie {
 
+    @Version
+    private Long version;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

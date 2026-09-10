@@ -9,11 +9,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import it.its.cinema.shows_service.model.Movie;
 import it.its.cinema.shows_service.service.MovieService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/movies")
@@ -26,8 +28,11 @@ public class MovieController {
     @Operation(summary = "Recupera tutti i film")
     @ApiResponse(responseCode = "200", description = "Lista dei film recuperata con successo")
     @GetMapping
-    public List<Movie> getAllMovies() {
-        return movieService.findAll();
+    public Page<Movie> getAllMovies(
+            @PageableDefault(size = 20, sort = "title", direction = Sort.Direction.ASC)
+            Pageable pageable
+    ) {
+        return movieService.findAll(pageable);
     }
 
     @Operation(summary = "Recupera un film tramite ID")
@@ -48,10 +53,12 @@ public class MovieController {
             @ApiResponse(responseCode = "404", description = "Nessun film trovato", content = @Content)
     })
     @GetMapping("/search/{title}")
-    public List<Movie> searchMoviesByTitle(
-            @Parameter(description = "Testo da cercare nel titolo") @PathVariable String title
+    public Page<Movie> searchMoviesByTitle(
+            @Parameter(description = "Testo da cercare nel titolo") @PathVariable String title,
+            @PageableDefault(size = 20, sort = "title", direction = Sort.Direction.ASC)
+            Pageable pageable
     ) {
-        return movieService.findByTitle(title);
+        return movieService.findByTitle(title, pageable);
     }
 
     @Operation(summary = "Crea un nuovo film")
