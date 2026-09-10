@@ -117,9 +117,14 @@ public class ShowController {
 
     @PostMapping("/add")
     public ResponseEntity<Show> create(
-            @RequestBody Show show
+            @RequestBody Show richiesta
     ) {
-        Show created = showService.addShow(show);
+        Show created = showService.addShow(
+                richiesta.getMovie().getId(),
+                richiesta.getStartTime(),
+                richiesta.getTotalSeats(),
+                richiesta.getBasePrice()
+        );
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
