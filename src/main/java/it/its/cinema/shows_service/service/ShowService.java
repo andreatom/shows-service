@@ -56,7 +56,7 @@ public class ShowService {
 
     @Transactional(readOnly = true)
     public Show findById(Long id) {
-        return repository.findById(id)
+        return repository.findWithMovieById(id)
                 .orElseThrow(() -> new ShowNotFoundException(id));
     }
 
@@ -87,10 +87,10 @@ public class ShowService {
     }
 
     @Transactional
-    public Show updateShow(Show show) {
-        if (!repository.existsById(show.getId())) {
-            throw new ShowNotFoundException(show.getId());
-        }
+    public Show updateShow(Long id, LocalDateTime startTime, BigDecimal basePrice) {
+        Show show = findById(id);
+        show.setStartTime(startTime);
+        show.setBasePrice(basePrice);
         return repository.save(show);
     }
 }
