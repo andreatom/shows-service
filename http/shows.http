@@ -1,0 +1,49 @@
+### VARIABILI
+@host = localhost:8081
+@baseUrl = http://{{host}}/api/shows
+
+
+### FIND ALL SHOWS (paginato, ordinato per startTime asc)
+GET {{baseUrl}}?page=0&size=20&sort=startTime,asc
+
+
+### FIND SHOW BY ID
+GET {{baseUrl}}/1
+
+
+### RICERCA PER FILM E INTERVALLO DI DATE
+GET {{baseUrl}}/ricerca?movieId=1&da=2024-01-01T00:00:00&a=2024-12-31T23:59:59&page=0&size=20
+
+
+### CREA NUOVO SPETTACOLO
+POST {{baseUrl}}/add
+Content-Type: application/json
+
+{
+  "movieId": 1,
+  "startTime": "2026-12-10T21:00:00",
+  "basePrice": 9.50,
+  "totalSeats": 120
+}
+
+
+### AGGIORNA SPETTACOLO ESISTENTE
+PUT {{baseUrl}}/1
+Content-Type: application/json
+
+{
+  "startTime": "2026-12-11T21:30:00",
+  "basePrice": 12.00
+}
+
+
+### ELIMINA SPETTACOLO PER ID
+DELETE {{baseUrl}}/deleteById?id=1
+
+
+### PRENOTA POSTI PER UNO SPETTACOLO
+POST {{baseUrl}}/1/reserve?quantity=2
+
+
+### RILASCIA POSTI PER UNO SPETTACOLO
+POST {{baseUrl}}/1/release?quantity=2

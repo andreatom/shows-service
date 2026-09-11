@@ -1,0 +1,33 @@
+### VARIABILI
+@host = localhost:8081
+@baseUrl = http://{{host}}/api/movies
+
+
+### FIND ALL MOVIES (paginato, ordinato per title asc)
+GET {{baseUrl}}?page=0&size=20&sort=title,asc
+
+
+### FIND ALL MOVIES CON FILTRO TITOLO (query param opzionale)
+GET {{baseUrl}}?title=dune&page=0&size=20
+
+
+### FIND MOVIE BY ID
+GET {{baseUrl}}/1
+
+
+### CERCA FILM PER TITOLO (ricerca parziale, case-insensitive)
+GET {{baseUrl}}/search/dune?page=0&size=20
+
+
+### CREA NUOVO FILM
+POST {{baseUrl}}/create
+Content-Type: application/json
+
+{
+  "title": "Il Signore degli Anelli: La Compagnia dell'Anello",
+  "durationMinutes": 178
+}
+
+
+### ELIMINA FILM PER ID
+DELETE {{baseUrl}}/delete/1
