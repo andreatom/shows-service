@@ -32,4 +32,6 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
                                      @Param("a")LocalDateTime a,
                                      Pageable pageable
                                      );
+
+    boolean existsByMovieId(Long movieId);
 }

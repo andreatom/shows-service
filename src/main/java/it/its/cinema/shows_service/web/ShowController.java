@@ -9,16 +9,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import it.its.cinema.shows_service.model.Show;
 import it.its.cinema.shows_service.service.ShowService;
+import it.its.cinema.shows_service.web.dto.CreateShowRequest;
+import it.its.cinema.shows_service.web.dto.ShowResponse;
+import it.its.cinema.shows_service.web.dto.UpdateShowRequest;
+import it.its.cinema.shows_service.web.mapper.ShowMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 
 @RestController
@@ -27,6 +32,7 @@ import java.time.LocalDateTime;
 public class ShowController {
 
     private final ShowService showService;
+    private final ShowMapper showMapper;
 
     @Operation(
             summary = "Elenca gli spettacoli",
@@ -44,11 +50,11 @@ public class ShowController {
     })
 
     @GetMapping
-    public Page<Show> findAll(
+    public Page<ShowResponse> findAll(
             @PageableDefault(size = 20, sort = "startTime", direction = Sort.Direction.ASC)
             Pageable pageable
     ) {
-        return showService.findAll(pageable);
+        return showMapper.toResponse(showService.findAll(pageable));
     }
 
     @Operation(
@@ -70,15 +76,15 @@ public class ShowController {
             )
     })
 
-    @GetMapping("/findById")
-    public Show findById(
-            @RequestParam Long id
+    @GetMapping("/{id}")
+    public ShowResponse findById(
+            @PathVariable Long id
     ) {
-        return showService.findById(id);
+        return showMapper.toResponse(showService.findById(id));
     }
 
     @GetMapping("/ricerca")
-    public Page<Show> ricerca(
+    public Page<ShowResponse> ricerca(
             @Parameter(description = "Identificativo del film", example = "1")
             @RequestParam Long movieId,
             @Parameter(description = "Inizio dell'intervallo", example = "2024-01-01T00:00:00")
@@ -88,7 +94,7 @@ public class ShowController {
             @PageableDefault(size = 20, sort = "startTime", direction = Sort.Direction.ASC)
             Pageable pageable
     ){
-        return showService.perFilmEIntervallo(movieId, da, a, pageable);
+        return showMapper.toResponse(showService.perFilmEIntervallo(movieId, da, a, pageable));
     }
 
 
@@ -140,16 +146,17 @@ public class ShowController {
     })
 
     @PostMapping("/add")
-    public ResponseEntity<Show> create(
-            @RequestBody Show richiesta
+    public ResponseEntity<ShowResponse> create(
+            @Valid @RequestBody CreateShowRequest richiesta
     ) {
         Show created = showService.addShow(
-                richiesta.getMovie().getId(),
-                richiesta.getStartTime(),
-                richiesta.getTotalSeats(),
-                richiesta.getBasePrice()
+                richiesta.movieId(),
+                richiesta.startTime(),
+                richiesta.totalSeats(),
+                richiesta.basePrice()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.created(URI.create("/api/shows/" + created.getId()))
+                .body(showMapper.toResponse(created));
     }
 
     @Operation(
@@ -175,11 +182,19 @@ public class ShowController {
                     content = @Content
             )
     })
-    @PutMapping("/update")
-    public Show update(
-            @RequestBody Show show
+    @PutMapping("/{id}")
+    public ShowResponse update(
+            @Parameter(description = "Identificativo dello spettacolo", example = "1")
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateShowRequest richiesta
     ) {
-        return showService.updateShow(show);
+        return showMapper.toResponse(
+                showService.updateShow(
+                        id,
+                        richiesta.startTime(),
+                        richiesta.basePrice()
+                )
+        );
     }
 
     @Operation(
@@ -201,13 +216,13 @@ public class ShowController {
             )
     })
     @PostMapping("/{id}/reserve")
-    public Show reserveSeats(
-            @io.swagger.v3.oas.annotations.Parameter(description = "ID dello spettacolo", example = "1", required = true)
+    public ShowResponse reserveSeats(
+            @Parameter(description = "Identificativo dello spettacolo", example = "1")
             @PathVariable Long id,
-            @io.swagger.v3.oas.annotations.Parameter(description = "Numero di posti da prenotare", example = "2", required = true)
+            @Parameter(description = "Numero di posti da prenotare", example = "2")
             @RequestParam int quantity
     ) {
-        return showService.reserveSeats(id, quantity);
+        return showMapper.toResponse(showService.reserveSeats(id, quantity));
     }
 
     @Operation(
@@ -228,13 +243,14 @@ public class ShowController {
                     content = @Content
             )
     })
+
     @PostMapping("/{id}/release")
-    public Show releaseSeats(
-            @io.swagger.v3.oas.annotations.Parameter(description = "ID dello spettacolo", example = "1", required = true)
+    public ShowResponse releaseSeats(
+            @Parameter(description = "Identificativo dello spettacolo", example = "1")
             @PathVariable Long id,
-            @io.swagger.v3.oas.annotations.Parameter(description = "Numero di posti da rilasciare", example = "2", required = true)
+            @Parameter(description = "Numero di posti da rilasciare", example = "2")
             @RequestParam int quantity
     ) {
-        return showService.releaseSeats(id, quantity);
+        return showMapper.toResponse(showService.releaseSeats(id, quantity));
     }
 }

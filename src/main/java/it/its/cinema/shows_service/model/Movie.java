@@ -26,13 +26,11 @@ public class Movie {
     @Column(nullable = false, name = "minutes")
     private int durationMinutes;
 
-    @JsonCreator(mode = JsonCreator.Mode.DISABLED)
     public Movie(String title, int durationMinutes) {
         this.title = title;
         this.durationMinutes = durationMinutes;
     }
 
-    @JsonCreator(mode = JsonCreator.Mode.DISABLED)
     public Movie(Long id, String title, int durationMinutes) {
         this.id = id;
         this.title = title;
