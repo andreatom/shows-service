@@ -3,10 +3,14 @@ package it.its.cinema.shows_service.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import it.its.cinema.shows_service.catalog.EsitoImport;
+import it.its.cinema.shows_service.catalog.RemoteCatalogImporter;
 import it.its.cinema.shows_service.model.Movie;
 import it.its.cinema.shows_service.service.MovieService;
+import it.its.cinema.shows_service.web.dto.ImportResponse;
 import it.its.cinema.shows_service.web.dto.MovieRequest;
 import it.its.cinema.shows_service.web.dto.MovieResponse;
 import it.its.cinema.shows_service.web.mapper.MovieMapper;
@@ -16,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +31,30 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class MovieController {
 
+    
     private final MovieService movieService;
     private final MovieMapper movieMapper;
+    private final RemoteCatalogImporter catalogoRemoto;
+
+
+    @Operation(summary = "Importa il catalogo da un fornitore esterno",
+            description = "Scarica il catalogo remoto (client feign) e inserisce"
+                    + " solo i film non ancora presenti. Rieseguirlo non duplica"
+                    + " niente: la seconda chiamata importa zero film.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Importazione completata con successo",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ImportResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Il fornitore non ha risposto: non è un errore nostro",
+                    content = @Content(mediaType = "application/problem+json",
+                        schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping("/importa-da-fornitore")
+    public ImportResponse importaDaFornitore() {
+        EsitoImport esito = catalogoRemoto.importaDalFornitore();
+        return new ImportResponse(esito.importati(), esito.giaPresenti(),
+                esito.totaleNellaSorgente());
+    }
 
 
     @Operation(summary = "Recupera tutti i film")

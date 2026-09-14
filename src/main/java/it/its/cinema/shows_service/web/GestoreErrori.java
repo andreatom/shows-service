@@ -28,6 +28,20 @@ public class GestoreErrori extends ResponseEntityExceptionHandler {
         return p;
     }
 
+     @ExceptionHandler(CatalogProviderUnavailableException.class)
+     public ResponseEntity<ProblemDetail> fornitoreNonDisponibile(
+             CatalogProviderUnavailableException e) {
+
+        ProblemDetail corpo = problema(HttpStatus.SERVICE_UNAVAILABLE,
+                "Fornitore non disponibile",
+                "fornitore-non-disponibile",
+                e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, "30")
+                .body(corpo);
+     }
+
     @ExceptionHandler({ShowNotFoundException.class, MovieNotFoundException.class})
     public ProblemDetail nonTrovato(RuntimeException e) {
         boolean film = e instanceof MovieNotFoundException;
